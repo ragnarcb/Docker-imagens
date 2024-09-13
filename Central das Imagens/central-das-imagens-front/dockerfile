@@ -1,0 +1,32 @@
+# Etapa 1: Construção da aplicação
+# Usa uma imagem leve do Node.js versão 18, baseada em Alpine Linux. "AS build" nomeia esta etapa como "build".
+FROM node:18-alpine AS build  
+
+# Define o diretório de trabalho dentro do container como "/app".
+WORKDIR /app  
+
+# Copia os arquivos de dependências (package.json e package-lock.json) para o diretório de trabalho "/app".
+COPY package.json package-lock.json ./  
+
+# Executa o comando `npm install` para instalar todas as dependências necessárias definidas no package.json.
+RUN npm install  
+
+# Copia todos os arquivos do diretório atual para o container, no diretório de trabalho "/app".
+COPY . .  
+
+# Executa o comando de build da aplicação (geralmente compila o código-fonte para um diretório de distribuição, como "dist").
+RUN npm run build  
+
+
+# Etapa 2: Imagem final com Nginx
+# Usa uma imagem do Nginx baseada no Alpine Linux, que é leve e otimizada para servir conteúdo estático.
+FROM nginx:alpine  
+
+# Copia o conteúdo da pasta "dist" gerado na etapa de build para o diretório onde o Nginx serve os arquivos estáticos ("/usr/share/nginx/html").
+COPY --from=build /app/dist /usr/share/nginx/html  
+
+# Expõe a porta 80 para permitir acesso HTTP externo à aplicação.
+EXPOSE 80  
+
+# Define o comando padrão que será executado ao iniciar o container: o Nginx será iniciado com o modo "daemon off", o que significa que ele não será executado em segundo plano, mantendo o container em execução.
+CMD ["nginx", "-g", "daemon off;"]

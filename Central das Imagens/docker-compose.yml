@@ -1,0 +1,108 @@
+# Definição dos serviços (containers) que farão parte da aplicação
+services:  
+
+  # Serviço "backend" que representa a aplicação backend (provavelmente Java/Spring)
+  backend:  
+    # Define o diretório onde está o Dockerfile para o backend
+    build: ./CentralDasImagens  
+    
+    # Nome personalizado para o container backend
+    container_name: central_imagens_backend  
+    
+    # Mapeamento de portas: a porta 8080 do host será redirecionada para a porta 8080 do container
+    ports:  
+      - "8080:8080"  
+    
+    # Variáveis de ambiente utilizadas pela aplicação Spring
+    environment:  
+      # Nome da aplicação Spring
+      SPRING_APPLICATION_NAME: CentralDasImagens  
+      
+      # URL de conexão ao banco de dados MySQL, apontando para o serviço "db" na porta 3306
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/central  
+      
+      # Nome de usuário do banco de dados
+      SPRING_DATASOURCE_USERNAME: root  
+      
+      # Senha do banco de dados
+      SPRING_DATASOURCE_PASSWORD: root  
+      
+      # Driver JDBC do MySQL
+      SPRING_DATASOURCE_DRIVER-CLASS-NAME: com.mysql.cj.jdbc.Driver  
+      
+      # Configuração do Hibernate para atualizar automaticamente o esquema do banco de dados
+      SPRING_JPA_HIBERNATE_DDL-AUTO: update  
+      
+      # Configuração para exibir as consultas SQL no console
+      SPRING.JPA.SHOW-SQL: true  
+    
+    # Definição da rede à qual o serviço "backend" está conectado
+    networks:  
+      - central-network  
+    
+    # O serviço "backend" depende do serviço "db" para ser iniciado
+    depends_on:  
+      - db  
+    
+    # Reinicia o container automaticamente em caso de falha
+    restart: always  
+
+
+  # Serviço "frontend" que representa a aplicação frontend (provavelmente JavaScript)
+  frontend:  
+    # Define o diretório onde está o Dockerfile para o frontend
+    build: ./central-das-imagens-front  
+    
+    # Nome personalizado para o container frontend
+    container_name: central_imagens_frontend  
+    
+    # Mapeamento de portas: a porta 3000 do host será redirecionada para a porta 80 do container
+    ports:  
+      - "3000:80"  
+    
+    # Definição da rede à qual o serviço "frontend" está conectado
+    networks:  
+      - central-network  
+    
+    # O serviço "frontend" depende do serviço "backend" para ser iniciado
+    depends_on:  
+      - backend  
+
+
+  # Serviço "db" que representa o banco de dados MySQL
+  db:  
+    # Usará a imagem oficial do MySQL versão 8.0
+    image: mysql:8.0  
+    
+    # Nome personalizado para o container do banco de dados
+    container_name: mysql-db  
+    
+    # Variáveis de ambiente para configurar o banco de dados MySQL
+    environment:  
+      # Senha do usuário root do banco de dados
+      MYSQL_ROOT_PASSWORD: root  
+      
+      # Nome do banco de dados a ser criado
+      MYSQL_DATABASE: central  
+      
+      # Nome de usuário adicional
+      MYSQL_USER: senac  
+      
+      # Senha do usuário adicional
+      MYSQL_PASSWORD: senac  
+    
+    # Mapeamento de portas: a porta 4306 do host será redirecionada para a porta 3306 do container
+    ports:  
+      - "4306:3306"  
+    
+    # Definição da rede à qual o serviço "db" está conectado
+    networks:  
+      - central-network  
+
+
+# Definição das redes que serão utilizadas pelos serviços
+networks:  
+  # Rede chamada "central-network" para comunicação entre os serviços
+  central-network:  
+    # Define que a rede usará o driver "bridge" (modo padrão para comunicação entre containers)
+    driver: bridge  

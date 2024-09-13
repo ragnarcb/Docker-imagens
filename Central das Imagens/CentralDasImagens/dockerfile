@@ -1,0 +1,34 @@
+# Etapa 1: Construção da aplicação
+
+# Usa uma imagem do Maven com OpenJDK 17 para compilar a aplicação. "AS build" define um nome para essa etapa do build.
+FROM maven:3.8.4-openjdk-17 AS build  
+
+# Define o diretório de trabalho dentro do container como "/app".
+WORKDIR /app  
+
+# Copia o arquivo pom.xml para o diretório de trabalho ("/app"). O pom.xml contém as dependências do projeto Maven.
+COPY pom.xml .  
+
+# Copia o diretório "src" (que contém o código-fonte da aplicação) para o diretório "/app/src" dentro do container.
+COPY src ./src  
+
+# Executa o comando Maven para limpar a pasta de build anterior e empacotar o projeto em um arquivo JAR, ignorando os testes.
+RUN mvn clean package -DskipTests  
+
+
+# Etapa 2: Criação da imagem final
+
+# Usa uma imagem mais leve do OpenJDK 17 baseada no Alpine Linux para executar a aplicação.
+FROM openjdk:17-jdk-alpine  
+
+# Define o diretório de trabalho como "/app" dentro da nova imagem.
+WORKDIR /app  
+
+# Copia o arquivo JAR gerado na etapa de build para o diretório de trabalho "/app". "--from=build" indica que está copiando da etapa anterior chamada "build".
+COPY --from=build /app/target/*.jar app.jar  
+
+# Expõe a porta 8080 para o mundo externo (o que é necessário, já que a aplicação Java estará escutando nesta porta).
+EXPOSE 8080  
+
+# Define o comando de entrada que será executado quando o container for iniciado. Aqui, ele executa o comando para rodar a aplicação Java a partir do JAR.
+ENTRYPOINT [ "java", "-jar", "/app/app.jar" ]

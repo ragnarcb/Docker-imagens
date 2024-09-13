@@ -1,0 +1,28 @@
+:root {
+  font-family: 'Montserrat', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+}
+
+.link {
+  background-color: #000;
+  color: #F5F9E9;
+  text-decoration: none;
+}
+
+.link:hover {
+  color: #F5F9E9;
+  transform: scale(0.95);
+}
